@@ -5,21 +5,23 @@ import 'package:todoapp/widgets/home_screen.dart';
 class AddNote extends StatefulWidget {
   Note? newNote;
   List<Note> listNote;
-  AddNote({required this.listNote, this.newNote});
+  Function? addNote;
+  Function? editNote;
+  Function? deleteNote;
+  AddNote({Key? key, required this.listNote, this.newNote, this.addNote, this.editNote, this.deleteNote})
+      : super(key: key);
+
   void _submitNote(String tittle, String content) {
     if (newNote != null) {
-      newNote!.title =tittle;
-      newNote!.content =content;
-      newNote!.date = DateTime.now();
+      editNote!(newNote, tittle,content);
     } else {
       if (tittle.isEmpty && content.isEmpty) {
         return;
       } else if (tittle.isEmpty) {
-        listNote.add(
-            Note(DateTime.now().toString(), DateTime.now(), 'No title',
-                content));
+        addNote!(Note(
+            DateTime.now().toString(), DateTime.now(), 'No title', content));
       } else {
-        listNote.add(
+        addNote!(
             Note(DateTime.now().toString(), DateTime.now(), tittle, content));
       }
     }
@@ -28,14 +30,13 @@ class AddNote extends StatefulWidget {
   @override
   _AddtodoState createState() => _AddtodoState();
 }
-
 class _AddtodoState extends State<AddNote> {
   final titleController = TextEditingController();
   final contentController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    if(widget.newNote!=null){
+    if (widget.newNote != null) {
       titleController.text = widget.newNote!.title;
       contentController.text = widget.newNote!.content;
     }
@@ -49,8 +50,8 @@ class _AddtodoState extends State<AddNote> {
         actions: [
           IconButton(
             onPressed: () {
-              if(widget.newNote!=null) {
-                userNotesList.removeWhere((element) => element.id==widget.newNote!.id);
+              if (widget.newNote != null) {
+                widget.deleteNote!(widget.newNote);
               }
               Navigator.of(context).pop();
             },
@@ -60,10 +61,8 @@ class _AddtodoState extends State<AddNote> {
           ),
           IconButton(
             onPressed: () {
-              widget._submitNote(titleController.text,contentController.text);
-              setState(() {
-                Navigator.of(context).pop();
-              });
+              widget._submitNote(titleController.text, contentController.text);
+              Navigator.of(context).pop();
             },
             icon: const Icon(Icons.check),
           ),
@@ -91,7 +90,8 @@ class _AddtodoState extends State<AddNote> {
               ),
             ),
 
-            TextFormField(
+            TextField(
+              autocorrect: true,
               controller: contentController,
               style: const TextStyle(fontSize: 16, color: Colors.black),
               decoration: const InputDecoration(

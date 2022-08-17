@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:todoapp/model/note.dart';
 import 'package:intl/intl.dart';
 import 'package:todoapp/widgets/home_screen.dart';
-import 'package:todoapp/widgets/add_todo.dart';
+import 'package:todoapp/widgets/add_note.dart';
+
 class NotesList extends StatelessWidget {
+  final Function _deleteNote;
+  final Function _editNote;
   final List<Note> listNotes;
 
-  NotesList(this.listNotes);
+  NotesList(this.listNotes, this._deleteNote, this._editNote);
+
   @override
   Widget build(BuildContext context) {
     return Flexible(
@@ -16,44 +20,57 @@ class NotesList extends StatelessWidget {
             return Card(
               elevation: 3,
               shadowColor: Colors.black,
-                child: GestureDetector(
-                  onTap: (){
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AddNote(listNote: listNotes, newNote: listNotes[index],),
-                          )
-                      );
-                    },
-
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.white,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => AddNote(
+                            listNote: listNotes,
+                            newNote: listNotes[index],
+                            editNote: _editNote,
+                          deleteNote: _deleteNote,
+                        )),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                  ),
+                  margin: const EdgeInsets.all(10),
+                  width: double.infinity,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(0),
+                    trailing: IconButton(
+                      onPressed: () => _deleteNote(listNotes[index]),
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.black,
+                      ),
                     ),
-                    margin: const EdgeInsets.all(10),
-                    width: double.infinity,
-                    child: Column(
+                    title: Text(
+                      listNotes[index].title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                      ),
+                    ),
+                    subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
+                      children: [
                         Text(
-                          listNotes[index].title,
+                          DateFormat.yMMMd()
+                              .format(listNotes[index].date)
+                              .toString(),
                           style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20,
-                          ),
-                        ),
-                        Text(
-                          DateFormat.yMMMd().format(listNotes[index].date).toString(),
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontStyle: FontStyle.italic
-                          ),
+                              fontSize: 15, fontStyle: FontStyle.italic),
                         ),
                         Text(
                           listNotes[index].content,
                           style: const TextStyle(
+                            color: Colors.black,
                             fontSize: 19,
                           ),
                         ),
@@ -61,6 +78,7 @@ class NotesList extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
             );
           }),
     );
