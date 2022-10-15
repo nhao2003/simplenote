@@ -1,86 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:todoapp/model/note.dart';
-import 'package:intl/intl.dart';
-import 'package:todoapp/widgets/home_screen.dart';
-import 'package:todoapp/widgets/add_note.dart';
+import 'package:todoapp/widgets/note_card.dart';
+import 'package:todoapp/model/user.dart';
 
-class NotesList extends StatelessWidget {
-  final Function _deleteNote;
-  final Function _editNote;
-  final List<Note> listNotes;
+class NotesList extends StatefulWidget {
+  const NotesList({super.key});
+  @override
+  State<NotesList> createState() => _NotesListState();
+}
 
-  NotesList(this.listNotes, this._deleteNote, this._editNote);
-
+class _NotesListState extends State<NotesList> {
+  void _moveToTrash(note){
+    setState(() {
+      User.moveToTrash(note);
+    });
+  }
   @override
   Widget build(BuildContext context) {
+    int screenWidth = MediaQuery.of(context).size.width ~/ 250;
     return Flexible(
-      child: ListView.builder(
-          itemCount: listNotes.length,
-          itemBuilder: (ctx, index) {
-            return Card(
-              elevation: 3,
-              shadowColor: Colors.black,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => AddNote(
-                            listNote: listNotes,
-                            newNote: listNotes[index],
-                            editNote: _editNote,
-                          deleteNote: _deleteNote,
-                        )),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
-                  ),
-                  margin: const EdgeInsets.all(10),
-                  width: double.infinity,
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(0),
-                    trailing: IconButton(
-                      onPressed: () => _deleteNote(listNotes[index]),
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.black,
-                      ),
-                    ),
-                    title: Text(
-                      listNotes[index].title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 20,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          DateFormat.yMMMd()
-                              .format(listNotes[index].date)
-                              .toString(),
-                          style: const TextStyle(
-                              fontSize: 15, fontStyle: FontStyle.italic),
-                        ),
-                        Text(
-                          listNotes[index].content,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 19,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
+      child: GridView.count(
+        crossAxisCount: screenWidth.toInt(),
+        children: User.NotesList.map((element) {
+          return NoteCard(element, _moveToTrash);
+        }).toList(),
+      ),
     );
   }
 }

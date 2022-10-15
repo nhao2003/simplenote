@@ -1,15 +1,13 @@
 import 'dart:io';
 import 'package:todoapp/model/note.dart';
 import 'package:flutter/material.dart';
-import 'package:todoapp/widgets/deleted_note_list.dart';
+import 'package:todoapp/screens/deleted_note_list.dart';
 import 'package:todoapp/widgets/note_list.dart';
-import 'package:todoapp/widgets/add_note.dart';
-import 'package:todoapp/widgets/deleted_note_list.dart';
-final List<Note> userNotesList = [];
-final List<Note> delNotesList = [];
+import 'package:todoapp/screens/add_note_screen.dart';
+import 'package:todoapp/model/user.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen();
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -20,34 +18,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     void _addNewNote(Note note) {
       setState(() {
-        userNotesList.add(note);
+        User.NotesList.add(note);
       });
     }
 
     void _startAddNewNote() {
       Navigator.push(
         context,
-        MaterialPageRoute(
-            builder: (_) =>
-                AddNote(listNote: userNotesList, addNote: _addNewNote)),
-      );
-    }
-
-    void _editNote(Note note, String tittle, String content) {
-      setState(() {
-        note.title = tittle;
-        note.content = content;
-        note.date = DateTime.now();
+        MaterialPageRoute(builder: (_) => AddNote()),
+      ).then((value) {
+        setState(() {
+          if (value != null) {
+            _addNewNote(value);
+          }
+        });
       });
     }
-
-    void _deleteNote(Note note) {
+    void _restoreAllNote() {
       setState(() {
-        delNotesList.add(note);
-        userNotesList.removeWhere((element) => element == note);
+        User.NotesList.addAll(User.deletedNotesList);
+        User.deletedNotesList.clear();
       });
     }
-
     return Scaffold(
       drawer: Drawer(
           child: ListView(
@@ -73,12 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             title: const Text('Trash'),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => DeletedNoteList(deletedNoteList: delNotesList, restoreToUserList: _addNewNote,)),
-              );
-            },
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => DeletedNoteList(_addNewNote, _restoreAllNote)));
+              },
           ),
           ListTile(
             leading: const Icon(
@@ -120,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             onPressed: () {
               setState(() {
-                userNotesList.clear();
+                User.NotesList.clear();
               });
             },
             icon: const Icon(
@@ -132,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: <Widget>[
-          NotesList(userNotesList, _deleteNote, _editNote),
+          NotesList(),
         ],
       ),
       floatingActionButton: FloatingActionButton(

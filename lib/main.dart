@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:todoapp/widgets/home_screen.dart';
+import 'package:todoapp/screens/home_screen.dart';
+import 'package:todoapp/screens/add_note_screen.dart';
+import './model/user.dart';
+import 'model/note.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +22,10 @@ class MyApp extends StatelessWidget {
             color: Colors.black,
           ),
       ),
-      home: const HomeScreen() ,
+      home: const HomeScreen(),
+      routes: {
+        AddNote.routeName: (context) => AddNote(),
+      },
     );
   }
 }

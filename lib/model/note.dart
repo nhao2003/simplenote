@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 class Note{
-  late String id;
-  late DateTime date;
+  final String id = DateTime.now().toString();
+  final DateTime date = DateTime.now();
   late String title;
   late String content;
-  Note(this.id, this.date, this.title, this.content);
+  Note(this.title, this.content);
 }

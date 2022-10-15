@@ -1,24 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:todoapp/widgets/note_list.dart';
+import 'package:todoapp/model/user.dart';
 
 import '../model/note.dart';
+
 class DeletedNoteList extends StatefulWidget {
-  final List<Note> deletedNoteList;
-  final Function restoreToUserList;
-  const DeletedNoteList({Key? key, required this.deletedNoteList, required this.restoreToUserList}) : super(key: key);
+  final Function _restoreNote;
+  final Function _restoreAllNote;
+
+  const DeletedNoteList(
+    this._restoreNote,
+    this._restoreAllNote,
+  );
 
   @override
   State<DeletedNoteList> createState() => _DeletedNoteListState();
 }
 
 class _DeletedNoteListState extends State<DeletedNoteList> {
-  void _restoreNote(Note note) {
+  void _restoreFromTrash(Note note) {
     setState(() {
-      widget.restoreToUserList(note);
-      widget.deletedNoteList.removeWhere((element) => element == note);
+      widget._restoreNote(note);
+      User.deletedNotesList.remove(note);
     });
   }
+
+  void _restoreAllFromTrash() {
+    setState(() {
+      widget._restoreAllNote();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,14 +40,25 @@ class _DeletedNoteListState extends State<DeletedNoteList> {
         iconTheme: const IconThemeData(color: Colors.black),
         actionsIconTheme: const IconThemeData(color: Colors.black),
         actions: [
-            IconButton(onPressed: (){}, icon: const Icon(Icons.restore))
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  User.deletedNotesList.clear();
+                });
+              },
+              icon: const Icon(Icons.delete_outline_sharp)),
+          IconButton(
+              onPressed: () {
+                _restoreAllFromTrash();
+              },
+              icon: const Icon(Icons.restore))
         ],
       ),
       body: Column(
         children: <Widget>[
           Flexible(
             child: ListView.builder(
-                itemCount: widget.deletedNoteList.length,
+                itemCount: User.deletedNotesList.length,
                 itemBuilder: (ctx, index) {
                   return Card(
                     elevation: 3,
@@ -51,14 +74,15 @@ class _DeletedNoteListState extends State<DeletedNoteList> {
                       child: ListTile(
                         contentPadding: const EdgeInsets.all(0),
                         trailing: IconButton(
-                          onPressed: () => _restoreNote(widget.deletedNoteList[index]),
+                          onPressed: () =>
+                              _restoreFromTrash(User.deletedNotesList[index]),
                           icon: const Icon(
-                            Icons.restore_from_trash,
+                            Icons.restart_alt_outlined,
                             color: Colors.black,
                           ),
                         ),
                         title: Text(
-                          widget.deletedNoteList[index].title,
+                          User.deletedNotesList[index].title,
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 20,
@@ -69,13 +93,13 @@ class _DeletedNoteListState extends State<DeletedNoteList> {
                           children: [
                             Text(
                               DateFormat.yMMMd()
-                                  .format(widget.deletedNoteList[index].date)
+                                  .format(User.deletedNotesList[index].date)
                                   .toString(),
                               style: const TextStyle(
                                   fontSize: 15, fontStyle: FontStyle.italic),
                             ),
                             Text(
-                              widget.deletedNoteList[index].content,
+                              User.deletedNotesList[index].content,
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 19,
