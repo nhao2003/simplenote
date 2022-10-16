@@ -3,14 +3,22 @@ import 'package:intl/intl.dart';
 import 'package:todoapp/model/note.dart';
 import 'package:todoapp/screens/home_screen.dart';
 
+import '../model/user.dart';
+
 class AddNote extends StatelessWidget {
   static const String routeName = 'addNote_Screen';
-  Note? newNote;
+  String noteID;
   final Function? moveToTrash;
 
-  AddNote({this.newNote, this.moveToTrash});
+  AddNote({this.noteID = "", this.moveToTrash});
 
   void _submitNote(BuildContext context, String title, String content) {
+    if(noteID.isNotEmpty){
+      int i = User.NotesList.indexWhere((element) => element.id == noteID);
+      User.NotesList[i].title = title;
+      User.NotesList[i].content = content;
+      User.NotesList[i].date = DateTime.now();
+    }
     if (title.isEmpty && content.isEmpty) {
       Navigator.pop(context);
     } else if (title.isEmpty) {
@@ -26,9 +34,10 @@ class AddNote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (newNote != null) {
-      titleController.text = newNote!.title;
-      contentController.text = newNote!.content;
+    if (noteID.isNotEmpty) {
+      Note newNote = User.NotesList.firstWhere((element) => element.id == noteID);
+      titleController.text = newNote.title;
+      contentController.text = newNote.content;
     }
     return Scaffold(
       backgroundColor: Colors.white,
@@ -38,12 +47,10 @@ class AddNote extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.black),
         actionsIconTheme: const IconThemeData(color: Colors.black),
         actions: [
-          if (newNote != null)
+          if (noteID.isNotEmpty)
             IconButton(
               onPressed: () {
-                if (newNote != null) {
-                  moveToTrash!(newNote);
-                }
+                moveToTrash!(noteID);
                 Navigator.of(context).pop();
               },
               icon: const Icon(
@@ -60,49 +67,47 @@ class AddNote extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        child: Flexible(
-          child: Padding(
-            padding: EdgeInsets.all(5),
-            child: Column(
-              children: [
-                //title
-                TextFormField(
-                  controller: titleController,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
+        child: Padding(
+          padding: EdgeInsets.all(5),
+          child: Column(
+            children: [
+              //title
+              TextFormField(
+                controller: titleController,
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 20,
+                ),
+                decoration: const InputDecoration(
+                  hintText: "Enter title",
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none,
                   ),
-                  decoration: const InputDecoration(
-                    hintText: "Enter title",
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                    ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none,
                   ),
                 ),
+              ),
 
-                TextField(
-                  autocorrect: true,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  controller: contentController,
-                  style: const TextStyle(fontSize: 16, color: Colors.black),
-                  decoration: const InputDecoration(
-                    hintText: "Enter content",
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                    ),
+              TextField(
+                autocorrect: true,
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
+                controller: contentController,
+                style: const TextStyle(fontSize: 16, color: Colors.black),
+                decoration: const InputDecoration(
+                  hintText: "Enter content",
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

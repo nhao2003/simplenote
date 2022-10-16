@@ -3,6 +3,7 @@ import 'package:todoapp/screens/home_screen.dart';
 import 'package:todoapp/screens/add_note_screen.dart';
 import './model/user.dart';
 import 'model/note.dart';
+import 'package:animations/animations.dart';
 
 void main() {
   runApp(MyApp());
@@ -18,9 +19,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: "Poppins",
-          iconTheme: const IconThemeData(
-            color: Colors.black,
-          ),
+        iconTheme: const IconThemeData(
+          color: Colors.black,
+        ),
       ),
       home: const HomeScreen(),
       routes: {

@@ -4,20 +4,20 @@ import 'package:todoapp/model/user.dart';
 
 import '../model/note.dart';
 
-class DeletedNoteList extends StatefulWidget {
+class DeletedNoteScreen extends StatefulWidget {
   final Function _restoreNote;
   final Function _restoreAllNote;
 
-  const DeletedNoteList(
+  const DeletedNoteScreen(
     this._restoreNote,
     this._restoreAllNote,
   );
 
   @override
-  State<DeletedNoteList> createState() => _DeletedNoteListState();
+  State<DeletedNoteScreen> createState() => _DeletedNoteScreenState();
 }
 
-class _DeletedNoteListState extends State<DeletedNoteList> {
+class _DeletedNoteScreenState extends State<DeletedNoteScreen> {
   void _restoreFromTrash(Note note) {
     setState(() {
       widget._restoreNote(note);
