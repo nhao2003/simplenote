@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:todoapp/model/note.dart';
 import 'package:todoapp/screens/home_screen.dart';
 
-import '../model/user.dart';
+import '../model/notes.dart';
 
 class AddNote extends StatelessWidget {
   static const String routeName = 'addNote_Screen';
   String noteID;
-  final Function? moveToTrash;
 
-  AddNote({this.noteID = "", this.moveToTrash});
+  AddNote({this.noteID = ""});
 
   void _submitNote(BuildContext context, String title, String content) {
+    List<Note> listNote = Provider.of<Notes>(context, listen: false).NotesList;
     if(noteID.isNotEmpty){
-      int i = User.NotesList.indexWhere((element) => element.id == noteID);
-      User.NotesList[i].title = title;
-      User.NotesList[i].content = content;
-      User.NotesList[i].date = DateTime.now();
+      int i = listNote.indexWhere((element) => element.id == noteID);
+      listNote[i].title = title;
+      listNote[i].content = content;
+      listNote[i].date = DateTime.now();
     }
     if (title.isEmpty && content.isEmpty) {
       Navigator.pop(context);
@@ -35,10 +36,11 @@ class AddNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (noteID.isNotEmpty) {
-      Note newNote = User.NotesList.firstWhere((element) => element.id == noteID);
+      Note newNote = Provider.of<Notes>(context, listen: false).NotesList.firstWhere((element) => element.id == noteID);
       titleController.text = newNote.title;
       contentController.text = newNote.content;
     }
+    var provider = Provider.of<Notes>(context);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -50,8 +52,8 @@ class AddNote extends StatelessWidget {
           if (noteID.isNotEmpty)
             IconButton(
               onPressed: () {
-                moveToTrash!(noteID);
-                Navigator.of(context).pop();
+                provider.moveToTrash(noteID);
+                Navigator.of(context).pop((){});
               },
               icon: const Icon(
                 Icons.delete,

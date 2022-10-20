@@ -1,19 +1,21 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:todoapp/screens/add_note_screen.dart';
 
 import '../model/note.dart';
+import '../model/notes.dart';
 
 class NoteCard extends StatelessWidget {
   late Note _note;
-  final Function _moveToTrash;
 
   //final Function _deleteNote;
-  NoteCard(this._note, this._moveToTrash, {super.key});
+  NoteCard(this._note, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    var provider = Provider.of<Notes>(context);
     return OpenContainer(
       closedElevation: 0,
       openElevation: 0,
@@ -21,7 +23,6 @@ class NoteCard extends StatelessWidget {
           (BuildContext context, void Function({Object? returnValue}) action) {
         return AddNote(
           noteID: _note.id,
-          moveToTrash: _moveToTrash,
         );
       },
       closedBuilder: (BuildContext context, void Function() action) {
@@ -53,7 +54,7 @@ class NoteCard extends StatelessWidget {
                                           Colors.white),
                                 ),
                                 onPressed: () {
-                                  _moveToTrash(_note.id);
+                                  provider.moveToTrash(_note.id);
                                   Navigator.pop(context);
                                 },
                                 icon: const Icon(

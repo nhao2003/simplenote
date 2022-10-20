@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:todoapp/screens/setting_screen.dart';
 
 import '../screens/deleted_note_screen.dart';
 
 class MyDrawer extends StatelessWidget {
-  final Function _addNewNote;
-  final Function _restoreAllNote;
-  MyDrawer(this._addNewNote, this._restoreAllNote, {super.key});
+
+  MyDrawer();
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class MyDrawer extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                     builder: (context) =>
-                        DeletedNoteScreen(_addNewNote, _restoreAllNote)));
+                        DeletedNoteScreen()));
           },
         ),
         ListTile(
@@ -49,7 +49,8 @@ class MyDrawer extends StatelessWidget {
           ),
           title: const Text('Setting'),
           onTap: () {
-            Navigator.pop(context);
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => SettingScreen()));
           },
         ),
         ListTile(
@@ -61,7 +62,7 @@ class MyDrawer extends StatelessWidget {
           onTap: () {
             exit(0);
           },
-        )
+        ),
       ],
     ));
   }
