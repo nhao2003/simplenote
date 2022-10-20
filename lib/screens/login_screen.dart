@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:todoapp/screens/home_screen.dart';
+
+import '../model/auth.dart';
+import '../model/http_exception.dart';
 
 enum AuthMode { Signup, Login }
 
@@ -12,13 +17,19 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  TextEditingController passwordController = TextEditingController();
   bool _showPassword = true;
   double password_strength = 0;
+  bool isLoading = false;
   RegExp pass_valid = RegExp(r"(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W)");
   final GlobalKey<FormState> _formKey = GlobalKey();
   AuthMode authMode = AuthMode.Login;
+  Map<String, String> _authData = {
+    'email': '',
+    'password': '',
+  };
 
-  bool validatePassword(String pass) {
+  void validatePassword(String pass) {
     String _password = pass.trim();
     if (_password.isEmpty) {
       setState(() {
@@ -37,24 +48,97 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           password_strength = 4 / 4;
         });
-        return true;
       } else {
         setState(() {
           password_strength = 3 / 4;
         });
-        return false;
       }
     }
-    return false;
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('An error occurred'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Okay'),
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      // Invalid!
+      return;
+    }
+    _formKey.currentState!.save();
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      if (authMode == AuthMode.Login) {
+        // Log user in
+        await Provider.of<Auth>(context as BuildContext, listen: false).login(
+          _authData['email']!,
+          _authData['password']!,
+        );
+      } else {
+        // Sign user up
+        await Provider.of<Auth>(context as BuildContext, listen: false).signup(
+          _authData['email']!,
+          _authData['password']!,
+        );
+      }
+      Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      //Bắt exception trong HttpException
+    } on HttpException catch (error) {
+      String errorMessage = 'Authenticate failed.';
+      switch (error.toString()) {
+        case 'EMAIL_EXISTS':
+          {
+            errorMessage = 'This email is already to use';
+            break;
+          }
+        case 'INVALID_EMAIL':
+          {
+            errorMessage = 'This is not a valid email address';
+            break;
+          }
+        case 'WEAK_PASSWORD':
+          {
+            errorMessage = 'This password is too weak.';
+            break;
+          }
+        case 'EMAIL_NOT_FOUND':
+          {
+            errorMessage = 'Could not find a user with that email.';
+            break;
+          }
+        case 'INVALID_PASSWORD':
+          {
+            errorMessage = 'Invalid password';
+            break;
+          }
+      }
+      _showErrorDialog(errorMessage);
+    } catch (error) {
+      String errorMessage = 'Could not authenticate you. Please try again.';
+    }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    void save() {
-      if (!_formKey.currentState!.validate()) return;
-      _formKey.currentState!.save();
-    }
-    TextEditingController passwordController = TextEditingController();
     return Scaffold(
       body: Form(
         key: _formKey,
@@ -123,8 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           labelText: 'Email',
                         ),
                         onSaved: (String? value) {
-                          // This optional block of code can be used to run
-                          // code when the user saves the form.
+                          _authData['email'] = value!;
                         },
                         validator: (value) {
                           if (!value!.contains('@')) return "Invalid email";
@@ -133,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextFormField(
                         controller: passwordController,
                         decoration: InputDecoration(
-                          icon: Icon(Icons.lock),
+                          icon: const Icon(Icons.lock),
                           labelText: 'Password',
                           suffixIcon: IconButton(
                             onPressed: () {
@@ -142,8 +225,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               });
                             },
                             icon: _showPassword
-                                ? Icon(Icons.visibility)
-                                : Icon(Icons.visibility_off),
+                                ? const Icon(Icons.visibility)
+                                : const Icon(Icons.visibility_off),
                             color: Theme.of(context).primaryColorDark,
                           ),
                         ),
@@ -152,19 +235,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (authMode == AuthMode.Signup) {
                             if (value!.isEmpty) {
                               return "Please enter password";
-                            } else {
-                              //call function to check password
-                              bool result = validatePassword(value);
-                              if (result) {
-                                // create account event
-                                return null;
-                              } else {
-                                return " Password should contain Capital,\n small letter & Number & Special";
-                              }
                             }
                           }
                         },
-                        onSaved: (value) {},
+                        onSaved: (value) {
+                          _authData['password'] = value!;
+                        },
+                        onChanged: (value) {
+                          if (authMode == AuthMode.Signup) {
+                            validatePassword(value);
+                          }
+                        },
                       ),
                       if (authMode == AuthMode.Signup)
                         TextFormField(
@@ -187,12 +268,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           obscureText: _showPassword,
                           validator: authMode == AuthMode.Signup
                               ? (value) {
-                            if (value != passwordController.text) {
-                              return 'Passwords do not match!';
-                            }
-                          }
+                                  if (value != passwordController.text) {
+                                    return 'Passwords do not match!';
+                                  }
+                                }
                               : null,
-                          onSaved: (value) {},
                         ),
                       if (authMode == AuthMode.Signup)
                         Padding(
@@ -213,15 +293,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 10),
                         child: Column(children: [
-                          Container(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: save,
-                              child: Text((authMode == AuthMode.Login)
-                                  ? "Login in"
-                                  : "Sign up"),
-                            ),
-                          ),
+                          (isLoading)
+                              ? const CircularProgressIndicator()
+                              : Container(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: _submit,
+                                    child: Text((authMode == AuthMode.Login)
+                                        ? "Login in"
+                                        : "Sign up"),
+                                  ),
+                                ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
@@ -245,7 +327,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   (authMode == AuthMode.Login)
                                       ? "Create an account"
                                       : "Login",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ],

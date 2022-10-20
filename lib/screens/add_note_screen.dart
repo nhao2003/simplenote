@@ -23,9 +23,9 @@ class AddNote extends StatelessWidget {
     if (title.isEmpty && content.isEmpty) {
       Navigator.pop(context);
     } else if (title.isEmpty) {
-      Navigator.pop(context, Note('No title', content));
+      Navigator.pop(context, {'title': 'No title','content': content});
     } else {
-      Navigator.pop(context, Note(title, content));
+      Navigator.pop(context, {'title': title,'content': content});
     }
   }
 

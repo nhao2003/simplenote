@@ -8,6 +8,7 @@ import 'package:todoapp/screens/add_note_screen.dart';
 import 'package:todoapp/model/notes.dart';
 
 class HomeScreen extends StatefulWidget {
+  static const String routeName = '/home';
   const HomeScreen();
 
   static final controller = ScrollController();
@@ -27,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
         MaterialPageRoute(builder: (contex) => AddNote()),
       ).then((value) {
         if (value != null) {
-          Provider.of<Notes>(context, listen: false).addNewNote(value);
+          Provider.of<Notes>(context, listen: false).addNewNote(value['title'], value['content']);
         }
         setState(() {});
       });
